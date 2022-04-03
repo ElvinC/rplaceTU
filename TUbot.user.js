@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         TU Delft/e /r/place Template
+// @name         TU Delft/e /r/place bot
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  TU Delft and TU/e clicker
 // @author       halfdane (original author)
 // @require      http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js
@@ -38,39 +38,50 @@ async function run() {
     }
 
     const colors = {
-        1: "#BE0039",
         2:  "#FF4500",
         3:  "#FFA800",
         4:  "#FFD635",
         6:  "#00A368",
-        7: "#00CC78",
         8:  "#7EED56",
-        9: "#00756F",
-        10:"#009EAA",
         12: "#2450A4",
         13: "#3690EA",
         14: "#51E9F4",
-        15:"#493AC1",
-        16:"#6A5CFF",
         18: "#811E9F",
         19: "#B44AC0",
-        22: "#FF3881",
         23: "#FF99AA",
-        24: "#6D482F",
         25: "#9C6926",
         27: "#000000",
         29: "#898D90",
         30: "#D4D7D9",
         31: "#FFFFFF",
     };
-
     for (const [k, v] of Object.entries(colors)) {
         colors[v] = k;
+    }
+
+
+    function update_coords() {
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: "https://raw.githubusercontent.com/ElvinC/rplaceTU/master/coords.txt?tstamp=" + Math.floor(Date.now() / 10000),
+            onload: function(response) {
+                let splitString = response.responseText.split(",");
+                console.log(splitString)
+                X_OFFSET = parseInt(splitString[0]);
+                Y_OFFSET = parseInt(splitString[1]);
+                console.log("UPDATED OFFSET");
+                console.log(X_OFFSET + "," + Y_OFFSET);
+                if (X_OFFSET != -1) {
+                    console.log("VALID COORDINATES RECEIVED")
+                }
+            }
+        });
     }
 
     async function get_template_ctx(){
         return new Promise((resolve, reject) => {
             let img = new Image()
+            update_coords();
             img.crossOrigin = "Anonymous";
             img.onload = () => {
                 const template_canvas = document.createElement("canvas");
@@ -103,21 +114,6 @@ async function run() {
         }
     }
 
-    GM_xmlhttpRequest({
-        method: "GET",
-        url: "https://raw.githubusercontent.com/ElvinC/rplaceTU/master/coords.txt?tstamp=" + Math.floor(Date.now() / 10000),
-        onload: function(response) {
-            let splitString = response.responseText.split(",");
-            console.log(splitString)
-            X_OFFSET = parseInt(splitString[0]);
-            Y_OFFSET = parseInt(splitString[1]);
-            console.log("UPDATED OFFSET");
-            console.log(X_OFFSET + "," + Y_OFFSET);
-            if (X_OFFSET != -1) {
-                console.log("VALID COORDINATES RECEIVED")
-            }
-        }
-    });
 
     await sleep(5_000);
 

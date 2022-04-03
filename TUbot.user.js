@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TU Delft/e /r/place bot
 // @namespace    http://tampermonkey.net/
-// @version      0.8
+// @version      0.9
 // @description  TU Delft and TU/e clicker
 // @author       halfdane (original author)
 // @require      http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js

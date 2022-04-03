@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         TU Delft/e /r/place Template
+// @name         TU Delft/e /r/place bot
 // @namespace    http://tampermonkey.net/
 // @version      0.8
 // @description  TU Delft and TU/e clicker

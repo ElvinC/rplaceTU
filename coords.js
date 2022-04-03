@@ -1,1 +1,0 @@
-COORDINATES = [1899,0]

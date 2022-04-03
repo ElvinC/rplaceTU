@@ -1,11 +1,19 @@
 from PIL import Image, ImageOps
 
+offset = [-1, 0]
+
+# Use values from file
+with open("coords.txt", "r") as f:
+	offset = [int(val) for val in f.readlines()[0].split(",")]
+	print(offset)
+
+
 im = Image.open("TU.png")
 print(im.mode)
 W = 2000
 H = 1000
 out = Image.new(im.mode, size=(2000, 1000))
-out.paste(im, (1899, 0))
+out.paste(im, offset)
 
 template = Image.new(im.mode, size=(2000 * 3, 1000 * 3))
 for i in range(W):

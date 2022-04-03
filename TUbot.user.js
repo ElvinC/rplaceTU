@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         TU Delft/e /r/place bot
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  TU Delft and TU/e clicker
-// @author       halfdane (original author)
+// @author       halfdane (original author), elvin
 // @require      http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js
 // @match        https://hot-potato.reddit.com/embed*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=reddit.com
@@ -38,23 +38,32 @@ async function run() {
     }
 
     const colors = {
+        1: "#BE0039",
         2:  "#FF4500",
         3:  "#FFA800",
         4:  "#FFD635",
         6:  "#00A368",
+        7: "#00CC78",
         8:  "#7EED56",
+        9: "#00756F",
+        10:"#009EAA",
         12: "#2450A4",
         13: "#3690EA",
         14: "#51E9F4",
+        15:"#493AC1",
+        16:"#6A5CFF",
         18: "#811E9F",
         19: "#B44AC0",
+        22: "#FF3881",
         23: "#FF99AA",
+        24: "#6D482F",
         25: "#9C6926",
         27: "#000000",
         29: "#898D90",
         30: "#D4D7D9",
         31: "#FFFFFF",
     };
+
     for (const [k, v] of Object.entries(colors)) {
         colors[v] = k;
     }
@@ -81,7 +90,6 @@ async function run() {
     async function get_template_ctx(){
         return new Promise((resolve, reject) => {
             let img = new Image()
-            update_coords();
             img.crossOrigin = "Anonymous";
             img.onload = () => {
                 const template_canvas = document.createElement("canvas");
@@ -122,7 +130,7 @@ async function run() {
         let edited = false;
         try{
             const {template_ctx, template_img} = await get_template_ctx();
-
+            update_coords();
             const ml = document.querySelector("mona-lisa-embed");
             const canvas = ml.shadowRoot.querySelector("mona-lisa-canvas").shadowRoot.querySelector("div > canvas")
             const ctx = canvas.getContext('2d');
@@ -140,6 +148,7 @@ async function run() {
 
             if (X_OFFSET == -1) {
                 console.log("Invalid coordinate, not placing pixels")
+                await sleep(500);
             }
             else if (errors.length > 0) {
                 var e = errors[Math.floor(Math.random()*errors.length)];

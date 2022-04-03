@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TU Delft/e /r/place bot
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  TU Delft and TU/e clicker
 // @author       halfdane (original author), elvin
 // @require      http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js
@@ -148,7 +148,7 @@ async function run() {
 
             if (X_OFFSET == -1) {
                 console.log("Invalid coordinate, not placing pixels")
-                await sleep(500);
+                await sleep(120000);
             }
             else if (errors.length > 0) {
                 var e = errors[Math.floor(Math.random()*errors.length)];

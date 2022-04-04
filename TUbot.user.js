@@ -15,13 +15,15 @@
 
 /**
  *
- *    Original script by halfdane, modified
+ *    modified from script by halfdane
  *    TU Delft and TU/e coordination: https://discord.gg/2KAgEuZp
  *
  */
 
 let X_OFFSET = -1 // Default not running until valid coordinates
 let Y_OFFSET = 0
+
+let bot_running = false;
 
 async function run() {
     const debug=false;
@@ -38,27 +40,35 @@ async function run() {
     }
 
     const colors = {
-        1: "#BE0039",
+        0:  "#6D001A",
+        1:  "#BE0039",
         2:  "#FF4500",
         3:  "#FFA800",
         4:  "#FFD635",
+        5:  "#FFF8B8",
         6:  "#00A368",
-        7: "#00CC78",
+        7:  "#00CC78",
         8:  "#7EED56",
-        9: "#00756F",
-        10:"#009EAA",
+        9:  "#00756F",
+        10: "#009EAA",
+        11: "#00CCC0",
         12: "#2450A4",
         13: "#3690EA",
         14: "#51E9F4",
-        15:"#493AC1",
-        16:"#6A5CFF",
+        15: "#493AC1",
+        16: "#6A5CFF",
+        17: "#94B3FF",
         18: "#811E9F",
         19: "#B44AC0",
+        20: "#E4ABFF",
+        21: "#DE107F",
         22: "#FF3881",
         23: "#FF99AA",
         24: "#6D482F",
         25: "#9C6926",
+        26: "#FFB470",
         27: "#000000",
+        28: "#515252",
         29: "#898D90",
         30: "#D4D7D9",
         31: "#FFFFFF",
@@ -72,7 +82,7 @@ async function run() {
     function update_coords() {
         GM_xmlhttpRequest({
             method: "GET",
-            url: "https://raw.githubusercontent.com/ElvinC/rplaceTU/master/coords.txt?tstamp=" + Math.floor(Date.now() / 10000),
+            url: "https://raw.githubusercontent.com/ElvinC/rplaceTU/master/coords_new.txt?tstamp=" + Math.floor(Date.now() / 10000),
             onload: function(response) {
                 let splitString = response.responseText.split(",");
                 console.log(splitString)
@@ -114,25 +124,79 @@ async function run() {
 
     async function setPixel(canvas, x, y, color) {
         canvas.dispatchEvent(g("click-canvas", { x, y }));
-        await sleep(1_000+ Math.floor(Math.random() * 1_000));
+        await sleep(600+ Math.floor(Math.random() * 1_000));
         canvas.dispatchEvent(g("select-color", { color: 1*colors[color] }));
-        await sleep(1_000+ Math.floor(Math.random() * 1_000));
-        if (!debug){
+        console.log(canvas)
+        await sleep(600+ Math.floor(Math.random() * 1_000));
+        if (!debug && bot_running){
             canvas.dispatchEvent(g("confirm-pixel"));
         }
     }
+    update_coords();
 
+    await sleep(1000)
+    let monl = document.querySelector("mona-lisa-embed");
+
+    monl.insertAdjacentHTML('afterend','<div id="start-auto-btn" style="position: fixed;cursor:pointer;left: 5px;top: 74px;background-color: #334455;color: white;padding: 12px;font-size: 13px;opacity: 0.8;border-radius: 10px;">Start bot</div>')
+
+    window.setInterval(update_coords, 300000);
+
+    await sleep(1_000);
+    let bot_btn = document.querySelector("#start-auto-btn");
+    bot_btn.addEventListener("click", function() {
+        bot_running = !bot_running;
+        console.log(bot_running ? "Starting bot" : "Stopping bot")
+        this.innerHTML = bot_running ? "Stop bot": "Start bot"
+    });
 
     await sleep(5_000);
+
+    function stop_bot() {
+        console.log("Something could be wrong... stopping bot")
+        bot_running = false;
+        bot_btn.innerHTML = bot_running ? "Stop bot": "Start bot";
+    }
+
+    let can_place = false;
 
     while (true) {
         console.log("running");
         let edited = false;
         try{
-            const {template_ctx, template_img} = await get_template_ctx();
-            update_coords();
-            const ml = document.querySelector("mona-lisa-embed");
-            const canvas = ml.shadowRoot.querySelector("mona-lisa-canvas").shadowRoot.querySelector("div > canvas")
+            let {template_ctx, template_img} = await get_template_ctx();
+
+            let ml = document.querySelector("mona-lisa-embed");
+
+            let canvas = ml.shadowRoot.querySelector("mona-lisa-canvas").shadowRoot.querySelector("div > canvas")
+            let timer = ml.shadowRoot.querySelector("mona-lisa-status-pill")
+
+            let pill_thing = timer.shadowRoot.querySelector(".pill");
+            let remaining_time = timer.getAttribute("next-tile-available-in");
+            let sleep_timeout = remaining_time * 1000 + Math.random() * 5_000 + 3_000;
+
+            can_place = false;
+
+            if (pill_thing.innerHTML.trim() == "Place a tile") {
+                can_place = true;
+            } else if (sleep_timeout > 0){
+                console.log(remaining_time + " seconds remaining... sleeping...");
+                await sleep(sleep_timeout);
+            } else {
+                stop_bot()
+            }
+
+            ml = document.querySelector("mona-lisa-embed");
+            canvas = ml.shadowRoot.querySelector("mona-lisa-canvas").shadowRoot.querySelector("div > canvas")
+            pill_thing = timer.shadowRoot.querySelector(".pill");
+
+            if (pill_thing.innerHTML.trim() == "Place a tile") {
+                can_place = true;
+                console.log("Can now place pixels")
+            }
+            else {
+                console.log("Still can't place")
+            }
+
             const ctx = canvas.getContext('2d');
             const errors = []
             for (let x = 0; x < template_img.width; x++) {
@@ -147,10 +211,10 @@ async function run() {
             }
 
             if (X_OFFSET == -1) {
-                console.log("Invalid coordinate, not placing pixels")
-                await sleep(120000);
+                console.log("Invalid coordinate, not placing pixels. Retrying in 60 seconds")
+                await sleep(60000);
             }
-            else if (errors.length > 0) {
+            else if (errors.length > 0 && can_place) {
                 var e = errors[Math.floor(Math.random()*errors.length)];
 
                 console.log("(%s / %s) is %c%s%c but should be %c%s", e.x, e.y,
@@ -168,16 +232,31 @@ async function run() {
             console.log("ignoring", error);
         } finally {
             let timeout;
+
             if (edited) {
-                timeout = 1_000 * 60 * 5 + 5_000 + Math.floor(Math.random() * 15_000);
+                //timeout = 1_000 * 60 * 5 + 5_000 + Math.floor(Math.random() * 15_000);
+                timeout = 10000;
             } else {
-                timeout =Math.floor(Math.random() * 5_000);
+                timeout =10000 + Math.floor(Math.random() * 3_000);
             }
             if (debug){
-                timeout = 1;
+                timeout = 1000;
             }
             console.log("sleeping for ", timeout);
             await sleep(timeout);
+
+            // Should've placed pixel, check if timer is up
+            if (can_place && bot_running) {
+                const ml = document.querySelector("mona-lisa-embed");
+                const timer = ml.shadowRoot.querySelector("mona-lisa-status-pill")
+
+                const pill_thing = timer.shadowRoot.querySelector(".pill");
+                let remaining_time = timer.getAttribute("next-tile-available-in");
+
+                if (!(remaining_time > 0)) {
+                    stop_bot();
+                }
+            }
         }
     }
 }

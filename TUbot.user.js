@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TU Delft/e /r/place bot
 // @namespace    http://tampermonkey.net/
-// @version      1.4
+// @version      1.5
 // @description  TU Delft and TU/e clicker
 // @author       halfdane (original author), elvin
 // @require      http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js
@@ -141,6 +141,9 @@ async function run() {
 
     window.setInterval(update_coords, 300000);
 
+    let can_place = false;
+    let toggle_history = false;
+
     await sleep(1_000);
     let bot_btn = document.querySelector("#start-auto-btn");
     bot_btn.addEventListener("click", function() {
@@ -157,7 +160,7 @@ async function run() {
         bot_btn.innerHTML = bot_running ? "Stop bot": "Start bot";
     }
 
-    let can_place = false;
+    
 
     while (true) {
         console.log("running");
@@ -246,7 +249,7 @@ async function run() {
             await sleep(timeout);
 
             // Should've placed pixel, check if timer is up
-            if (can_place && bot_running) {
+            if (can_place && toggle_history) {
                 const ml = document.querySelector("mona-lisa-embed");
                 const timer = ml.shadowRoot.querySelector("mona-lisa-status-pill")
 
@@ -257,6 +260,7 @@ async function run() {
                     stop_bot();
                 }
             }
+            toggle_history = bot_running;
         }
     }
 }
